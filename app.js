@@ -38,3 +38,39 @@ let setColor = (red, green, blue) => {
 let randomColor = () => {
   setColor(Math.floor(Math.random() * 256), Math.floor(Math.random() * 256), Math.floor(Math.random() * 256));
 }
+
+
+//keyboard
+let getKey = (e) => {
+  let location = e.location;
+  let selector;
+  if (location === KeyboardEvent.DOM_KEY_LOCATION_RIGHT) {
+      selector = ['[data-key="' + e.keyCode + '-R"]']
+  } else {
+      let code = e.keyCode || e.which;
+      selector = [
+          '[data-key="' + code + '"]',
+          '[data-char*="' + encodeURIComponent(String.fromCharCode(code)) + '"]'
+      ].join(',');
+  }
+  return document.querySelector(selector);
+}
+
+document.body.addEventListener('keydown', (e) => {
+  if (e.repeat) { 
+    return 
+  }
+  
+  let key = getKey(e);
+  if (!key) {
+    return console.warn('No key for', e.keyCode);
+  }
+  key.setAttribute('data-pressed', 'on');
+  console.log('keydown:', e);
+});
+
+document.body.addEventListener('keyup', (e) => {
+  let key = getKey(e);
+  key && key.removeAttribute('data-pressed');
+  console.log('keyup');
+});
