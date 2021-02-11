@@ -35,10 +35,28 @@ let setColor = (red, green, blue) => {
     .catch(err => console.log('Error when writing value! ', err));
 }
 
+let blank = () => {
+  let data = new Uint8Array([0x56, 0, 0, 0, 0x00, 0xf0, 0xaa]);
+  return ledCharacteristic.writeValue(data)
+    .catch(err => console.log('Error when writing value! ', err));  
+}
+
 let randomColor = () => {
   setColor(Math.floor(Math.random() * 256), Math.floor(Math.random() * 256), Math.floor(Math.random() * 256));
 }
 
+let timer;
+let startBPM = () => {
+  let bpm = document.querySelector('#bpm').value;
+  let interval = 60000 / bpm;
+  timer = setInterval(function(){
+    console.log('time is being called: Interval', interval);
+  }, interval);
+}
+
+let stopBPM = () => {
+  clearInterval(timer);
+}
 
 //keyboard
 let getKey = (e) => {
@@ -67,10 +85,13 @@ document.body.addEventListener('keydown', (e) => {
   }
   key.setAttribute('data-pressed', 'on');
   console.log('keydown:', e);
+
+  randomColor();
 });
 
 document.body.addEventListener('keyup', (e) => {
   let key = getKey(e);
   key && key.removeAttribute('data-pressed');
   console.log('keyup');
+  blank();
 });
