@@ -1,5 +1,22 @@
 let ledCharacteristic = null;
 
+let keyColor = new Map([
+  ['Q', '255,20,147'],
+  ['W', '255,0,0'],
+  ['E', '255,69,0'],
+  ['R', '255,255,0'],
+  ['A', '135,206,235'],
+  ['S', '148,0,211'],
+  ['D', '0,0,255'],
+  ['F', '0,128,128'],
+  ['Z', '0,255,127'],
+  ['X', '0,255,0'],
+  ['C', '154,205,50'],
+  ['V', '102,205,170'],
+]);
+
+let bpmColor = '255,255,255';
+
 let connectBulb = () => {
   console.log('Requesting Bluetooth Device...');
   navigator.bluetooth.requestDevice(
@@ -29,7 +46,12 @@ let connectBulb = () => {
     });
 }
 
-let setColor = (red, green, blue) => {
+let setColor = (rgb) => {
+  let rgbArr = rgb.split(',');
+  let red = rgbArr[0];
+  let green = rgbArr[1];
+  let blue = rgbArr[2];
+
   let data = new Uint8Array([0x56, red, green, blue, 0x00, 0xf0, 0xaa]);
   return ledCharacteristic.writeValue(data)
     .catch(err => console.log('Error when writing value! ', err));
@@ -42,7 +64,11 @@ let blank = () => {
 }
 
 let randomColor = () => {
-  setColor(Math.floor(Math.random() * 256), Math.floor(Math.random() * 256), Math.floor(Math.random() * 256));
+  let red = Math.floor(Math.random() * 256).toString();
+  let green = Math.floor(Math.random() * 256).toString();
+  let blue = Math.floor(Math.random() * 256).toString();
+
+  setColor(`${red},${green},${blue}`);
 }
 
 let timer;
@@ -50,7 +76,12 @@ let startBPM = () => {
   let bpm = document.querySelector('#bpm').value;
   let interval = 60000 / bpm;
   timer = setInterval(function(){
-    console.log('time is being called: Interval', interval);
+    setColor(bpmColor);
+
+
+    setTimeout(function() {
+      blank();
+    }, 100);
   }, interval);
 }
 
@@ -74,24 +105,49 @@ let getKey = (e) => {
   return document.querySelector(selector);
 }
 
-document.body.addEventListener('keydown', (e) => {
-  if (e.repeat) { 
+let getColor = (key) => {
+  let color = keyColor.get(key);
+
+  if (color) {
+    return color;
+  } else {
+    return '0,0,0';
+  }
+}
+
+let styleKeyWithColor = () => {
+  for (const [key, color] of keyColor.entries()) {
+    document.querySelector(`[data-char="${key}"]`).style.background = `rgb(${color})`;
+  }  
+}
+
+document.addEventListener("DOMContentLoaded", (e) => {
+  styleKeyWithColor();
+});
+
+document.addEventListener('keydown', (e) => {
+  if(e.repeat) { 
     return 
   }
   
   let key = getKey(e);
-  if (!key) {
-    return console.warn('No key for', e.keyCode);
-  }
   key.setAttribute('data-pressed', 'on');
-  console.log('keydown:', e);
 
-  randomColor();
+  if (ledCharacteristic !== null) {
+    if (e.key === ' ') {
+      randomColor();
+    } else {
+      let color = getColor(e.key.toUpperCase());
+      setColor(color);
+    }
+  }
 });
 
-document.body.addEventListener('keyup', (e) => {
+document.addEventListener('keyup', (e) => {
   let key = getKey(e);
   key && key.removeAttribute('data-pressed');
-  console.log('keyup');
-  blank();
+
+  if (ledCharacteristic !== null) {
+    blank();
+  }
 });
