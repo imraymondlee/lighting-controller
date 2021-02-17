@@ -13,6 +13,16 @@ let keyColor = new Map([
   ['X', '0,255,0'],
   ['C', '154,205,50'],
   ['V', '102,205,170'],
+  ['1', '255,20,147'],
+  ['2', '255,0,0'],
+  ['3', '255,69,0'],
+  ['4', '255,255,0'],
+  ['5', '135,206,235'],
+  ['6', '148,0,211'],
+  ['7', '0,0,255'],
+  ['8', '0,128,128'],
+  ['9', '0,255,127'],
+  ['0', '0,255,0']
 ]);
 
 let bpmColor = '255,255,255';
@@ -129,13 +139,16 @@ document.addEventListener('keydown', (e) => {
   if(e.repeat) { 
     return 
   }
-  
+
   let key = getKey(e);
   key.setAttribute('data-pressed', 'on');
 
   if (ledCharacteristic !== null) {
     if (e.key === ' ') {
       randomColor();
+    } else if (e.key >= 0 && e.key <= 9) {
+      let color = getColor(e.key.toUpperCase());
+      bpmColor = color;
     } else {
       let color = getColor(e.key.toUpperCase());
       setColor(color);
